@@ -12,6 +12,12 @@ import matplotlib.pyplot as plt
 import plotly.express as px
 
 
+
+datasets = {"Billionaires":"https://corgis-edu.github.io/corgis/datasets/csv/billionaires/billionaires.csv",
+            "Airlines":"https://corgis-edu.github.io/corgis/datasets/csv/airlines/airlines.csv",
+            "Aids":"https://corgis-edu.github.io/corgis/datasets/csv/aids/aids.csv",
+            "Cancer":"https://corgis-edu.github.io/corgis/datasets/csv/cancer/cancer.csv"}
+
 st.title("Data Explorer Pro Max")
 st.sidebar.title("Welcome")
 opt = st.sidebar.radio("How do you want to import the dataset", ("Upload CSV", "import via link"), index=0)
@@ -21,13 +27,20 @@ if opt == "Upload CSV":
     if x is not None:
         df = pd.read_csv(x)
 else:
-    x = st.text_input("Paste the link of the csv here")
+    x = st.text_input("Paste the link of the csv here or choose from given links")
 
     numrows = st.number_input("Number of rows you want to import", min_value=10, value=1000)
+    option = st.selectbox(
+        'Choose a dataset', 
+        list(datasets.keys()))
+
     check = st.checkbox("Import")
     if check:
-        df = pd.read_csv(x, nrows=numrows)
-    
+        if x == '':
+            df = pd.read_csv(datasets[option])
+        else:
+            df = pd.read_csv(x, nrows=numrows)
+            
 
 
 #data cleaning
@@ -69,13 +82,13 @@ if isinstance(df, pd.core.frame.DataFrame):
 
     st.sidebar.title("Data Exploration")
 
-    descol = st.sidebar.multiselect("Select columns to get statistics", df.columns)
+    descol = st.sidebar.multiselect("Select columns to get statistics", df.select_dtypes(include=np.number).columns)
     if descol:
-        st.subheader("Column Statistics")
+        st.subheader("Numeric Column Statistics")
         st.table(df[descol].describe())
 
     st.sidebar.subheader("Graphs")
-    typeOfData = st.sidebar.radio("What type of data you want to categorize", ("Numerical", "Categorical"))
+    typeOfData = st.sidebar.radio("What type of data you want to plot", ("Numerical", "Categorical"))
     if typeOfData == "Numerical":
         dfnew = df.select_dtypes(include=np.number)
         graphtype = st.sidebar.selectbox("Select the type of graph", ['Line Graph', 'Histogram'])
